@@ -1,0 +1,416 @@
+
+PwmButtonsAndADC.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         000001ae  00000000  00000000  00000074  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .bss          00000008  00800060  00800060  00000222  2**0
+                  ALLOC
+  2 .comment      00000030  00000000  00000000  00000222  2**0
+                  CONTENTS, READONLY
+  3 .debug_aranges 00000060  00000000  00000000  00000252  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  4 .debug_info   000002b2  00000000  00000000  000002b2  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .debug_abbrev 00000158  00000000  00000000  00000564  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_line   000001fd  00000000  00000000  000006bc  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_frame  000000b8  00000000  00000000  000008bc  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_str    000002d3  00000000  00000000  00000974  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_loc    000000aa  00000000  00000000  00000c47  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_ranges 00000050  00000000  00000000  00000cf1  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	10 c0       	rjmp	.+32     	; 0x22 <__ctors_end>
+   2:	1f c0       	rjmp	.+62     	; 0x42 <__bad_interrupt>
+   4:	1e c0       	rjmp	.+60     	; 0x42 <__bad_interrupt>
+   6:	1d c0       	rjmp	.+58     	; 0x42 <__bad_interrupt>
+   8:	1c c0       	rjmp	.+56     	; 0x42 <__bad_interrupt>
+   a:	1b c0       	rjmp	.+54     	; 0x42 <__bad_interrupt>
+   c:	1a c0       	rjmp	.+52     	; 0x42 <__bad_interrupt>
+   e:	19 c0       	rjmp	.+50     	; 0x42 <__bad_interrupt>
+  10:	18 c0       	rjmp	.+48     	; 0x42 <__bad_interrupt>
+  12:	17 c0       	rjmp	.+46     	; 0x42 <__bad_interrupt>
+  14:	16 c0       	rjmp	.+44     	; 0x42 <__bad_interrupt>
+  16:	32 c0       	rjmp	.+100    	; 0x7c <__vector_11>
+  18:	14 c0       	rjmp	.+40     	; 0x42 <__bad_interrupt>
+  1a:	13 c0       	rjmp	.+38     	; 0x42 <__bad_interrupt>
+  1c:	12 c0       	rjmp	.+36     	; 0x42 <__bad_interrupt>
+  1e:	11 c0       	rjmp	.+34     	; 0x42 <__bad_interrupt>
+  20:	10 c0       	rjmp	.+32     	; 0x42 <__bad_interrupt>
+
+00000022 <__ctors_end>:
+  22:	11 24       	eor	r1, r1
+  24:	1f be       	out	0x3f, r1	; 63
+  26:	cf e5       	ldi	r28, 0x5F	; 95
+  28:	d2 e0       	ldi	r29, 0x02	; 2
+  2a:	de bf       	out	0x3e, r29	; 62
+  2c:	cd bf       	out	0x3d, r28	; 61
+
+0000002e <__do_clear_bss>:
+  2e:	20 e0       	ldi	r18, 0x00	; 0
+  30:	a0 e6       	ldi	r26, 0x60	; 96
+  32:	b0 e0       	ldi	r27, 0x00	; 0
+  34:	01 c0       	rjmp	.+2      	; 0x38 <.do_clear_bss_start>
+
+00000036 <.do_clear_bss_loop>:
+  36:	1d 92       	st	X+, r1
+
+00000038 <.do_clear_bss_start>:
+  38:	a8 36       	cpi	r26, 0x68	; 104
+  3a:	b2 07       	cpc	r27, r18
+  3c:	e1 f7       	brne	.-8      	; 0x36 <.do_clear_bss_loop>
+  3e:	95 d0       	rcall	.+298    	; 0x16a <main>
+  40:	b4 c0       	rjmp	.+360    	; 0x1aa <_exit>
+
+00000042 <__bad_interrupt>:
+  42:	de cf       	rjmp	.-68     	; 0x0 <__vectors>
+
+00000044 <_Z12INITIATE_ADCv>:
+
+volatile uint8_t adc_value;
+
+void INITIATE_ADC()
+{
+	ADMUX=(0<<REFS0)|(0<<REFS1)|(1<<MUX1);		//Set VCC as reference voltage and ADC at PA2
+  44:	82 e0       	ldi	r24, 0x02	; 2
+  46:	87 b9       	out	0x07, r24	; 7
+	ADCSRA=(1<<ADEN)|(0<<ADSC);					// Activate ADC. Deactivate reading.
+  48:	80 e8       	ldi	r24, 0x80	; 128
+  4a:	86 b9       	out	0x06, r24	; 6
+	ADCSRB=(1<<ADLAR);							// Set the ordering of bits in input register
+  4c:	80 e1       	ldi	r24, 0x10	; 16
+  4e:	83 b9       	out	0x03, r24	; 3
+  50:	08 95       	ret
+
+00000052 <_Z7ADCReadv>:
+	
+}
+
+void ADCRead()
+{
+	ADCSRA |= (1 << ADSC);				//Read ADC
+  52:	36 9a       	sbi	0x06, 6	; 6
+	
+	while (((ADCSRA >> ADSC) & 1)){}	//Wait til ADR reading is done
+  54:	36 99       	sbic	0x06, 6	; 6
+  56:	fe cf       	rjmp	.-4      	; 0x54 <_Z7ADCReadv+0x2>
+	adc_value = ADCH;					//Read input register
+  58:	85 b1       	in	r24, 0x05	; 5
+  5a:	80 93 60 00 	sts	0x0060, r24
+  5e:	08 95       	ret
+
+00000060 <_Z17INITIATE_INTERUPTv>:
+}
+
+
+void INITIATE_INTERUPT()
+{
+	TCCR0B = 1<<CS00 | 1<< CS01;
+  60:	83 e0       	ldi	r24, 0x03	; 3
+  62:	83 bf       	out	0x33, r24	; 51
+	TIMSK0 = 1<<TOIE0;
+  64:	81 e0       	ldi	r24, 0x01	; 1
+  66:	89 bf       	out	0x39, r24	; 57
+	
+	sei();				//Enable Global Interrupt
+  68:	78 94       	sei
+  6a:	08 95       	ret
+
+0000006c <_Z15INITIATE_BUTTONv>:
+}
+
+void INITIATE_BUTTON()
+{
+	ButtonDDR = (0<<ButtonMask1) | (0<<ButtonMask2);
+  6c:	1a ba       	out	0x1a, r1	; 26
+	ButtonPort = (1<<ButtonMask1) | (1<<ButtonMask2);
+  6e:	83 e0       	ldi	r24, 0x03	; 3
+  70:	8b bb       	out	0x1b, r24	; 27
+  72:	08 95       	ret
+
+00000074 <_Z13INITIATE_LEDSv>:
+	
+}
+
+void INITIATE_LEDS()
+{
+	LEDPort = 1<<LEDMask;
+  74:	81 e0       	ldi	r24, 0x01	; 1
+  76:	88 bb       	out	0x18, r24	; 24
+	LEDDDR = 1<<LEDMask;
+  78:	87 bb       	out	0x17, r24	; 23
+  7a:	08 95       	ret
+
+0000007c <__vector_11>:
+}
+
+
+ISR(TIM0_OVF_vect)
+{
+  7c:	1f 92       	push	r1
+  7e:	0f 92       	push	r0
+  80:	0f b6       	in	r0, 0x3f	; 63
+  82:	0f 92       	push	r0
+  84:	11 24       	eor	r1, r1
+  86:	8f 93       	push	r24
+  88:	9f 93       	push	r25
+	if (~ButtonPIN & 1<<ButtonMask1)
+  8a:	c8 99       	sbic	0x19, 0	; 25
+  8c:	06 c0       	rjmp	.+12     	; 0x9a <__vector_11+0x1e>
+	{
+		button_flag = 1;
+  8e:	81 e0       	ldi	r24, 0x01	; 1
+  90:	90 e0       	ldi	r25, 0x00	; 0
+  92:	90 93 66 00 	sts	0x0066, r25
+  96:	80 93 65 00 	sts	0x0065, r24
+	}
+	
+	if (~ButtonPIN & 1<<ButtonMask2)
+  9a:	c9 99       	sbic	0x19, 1	; 25
+  9c:	06 c0       	rjmp	.+12     	; 0xaa <__vector_11+0x2e>
+	{
+		button_flag = 1;
+  9e:	81 e0       	ldi	r24, 0x01	; 1
+  a0:	90 e0       	ldi	r25, 0x00	; 0
+  a2:	90 93 66 00 	sts	0x0066, r25
+  a6:	80 93 65 00 	sts	0x0065, r24
+	}
+
+}
+  aa:	9f 91       	pop	r25
+  ac:	8f 91       	pop	r24
+  ae:	0f 90       	pop	r0
+  b0:	0f be       	out	0x3f, r0	; 63
+  b2:	0f 90       	pop	r0
+  b4:	1f 90       	pop	r1
+  b6:	18 95       	reti
+
+000000b8 <_Z8debouncev>:
+
+void debounce()
+{
+	unsigned char i;
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+  b8:	3f b7       	in	r19, 0x3f	; 63
+    return 1;
+}
+
+static __inline__ uint8_t __iCliRetVal(void)
+{
+    cli();
+  ba:	f8 94       	cli
+  bc:	25 e0       	ldi	r18, 0x05	; 5
+		for(i = 0; i<5; i++)
+		{
+			if (~ButtonPIN & 1<<ButtonMask1)
+  be:	c8 99       	sbic	0x19, 0	; 25
+  c0:	0a c0       	rjmp	.+20     	; 0xd6 <_Z8debouncev+0x1e>
+			{
+				button1_counter++;
+  c2:	80 91 63 00 	lds	r24, 0x0063
+  c6:	90 91 64 00 	lds	r25, 0x0064
+  ca:	01 96       	adiw	r24, 0x01	; 1
+  cc:	90 93 64 00 	sts	0x0064, r25
+  d0:	80 93 63 00 	sts	0x0063, r24
+  d4:	18 c0       	rjmp	.+48     	; 0x106 <_Z8debouncev+0x4e>
+			}
+			else
+			{
+				if (button1_counter >= 4)
+  d6:	80 91 63 00 	lds	r24, 0x0063
+  da:	90 91 64 00 	lds	r25, 0x0064
+  de:	04 97       	sbiw	r24, 0x04	; 4
+  e0:	74 f0       	brlt	.+28     	; 0xfe <_Z8debouncev+0x46>
+				{
+					button_state |= (1<<ButtonMask1);
+  e2:	80 91 67 00 	lds	r24, 0x0067
+  e6:	81 60       	ori	r24, 0x01	; 1
+  e8:	80 93 67 00 	sts	0x0067, r24
+					button_flag = 0;
+  ec:	10 92 66 00 	sts	0x0066, r1
+  f0:	10 92 65 00 	sts	0x0065, r1
+					button1_counter = 0;
+  f4:	10 92 64 00 	sts	0x0064, r1
+  f8:	10 92 63 00 	sts	0x0063, r1
+  fc:	04 c0       	rjmp	.+8      	; 0x106 <_Z8debouncev+0x4e>
+				}
+				else
+				{
+					button1_counter = 0;
+  fe:	10 92 64 00 	sts	0x0064, r1
+ 102:	10 92 63 00 	sts	0x0063, r1
+				}
+			}
+			
+			if (~ButtonPIN & 1<<ButtonMask2)
+ 106:	c9 99       	sbic	0x19, 1	; 25
+ 108:	0a c0       	rjmp	.+20     	; 0x11e <_Z8debouncev+0x66>
+			{
+				button2_counter++;
+ 10a:	80 91 61 00 	lds	r24, 0x0061
+ 10e:	90 91 62 00 	lds	r25, 0x0062
+ 112:	01 96       	adiw	r24, 0x01	; 1
+ 114:	90 93 62 00 	sts	0x0062, r25
+ 118:	80 93 61 00 	sts	0x0061, r24
+ 11c:	18 c0       	rjmp	.+48     	; 0x14e <_Z8debouncev+0x96>
+			}
+			else
+			{
+				if (button2_counter >= 4)
+ 11e:	80 91 61 00 	lds	r24, 0x0061
+ 122:	90 91 62 00 	lds	r25, 0x0062
+ 126:	04 97       	sbiw	r24, 0x04	; 4
+ 128:	74 f0       	brlt	.+28     	; 0x146 <_Z8debouncev+0x8e>
+				{
+					//button1_state = 1;
+					button_state |= (1<<ButtonMask2);
+ 12a:	80 91 67 00 	lds	r24, 0x0067
+ 12e:	82 60       	ori	r24, 0x02	; 2
+ 130:	80 93 67 00 	sts	0x0067, r24
+					button_flag = 0;
+ 134:	10 92 66 00 	sts	0x0066, r1
+ 138:	10 92 65 00 	sts	0x0065, r1
+					//flag = 0;
+					button2_counter = 0;
+ 13c:	10 92 62 00 	sts	0x0062, r1
+ 140:	10 92 61 00 	sts	0x0061, r1
+ 144:	04 c0       	rjmp	.+8      	; 0x14e <_Z8debouncev+0x96>
+				}
+				else
+				{
+					button2_counter = 0;
+ 146:	10 92 62 00 	sts	0x0062, r1
+ 14a:	10 92 61 00 	sts	0x0061, r1
+ 14e:	21 50       	subi	r18, 0x01	; 1
+
+void debounce()
+{
+	unsigned char i;
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+		for(i = 0; i<5; i++)
+ 150:	09 f0       	breq	.+2      	; 0x154 <_Z8debouncev+0x9c>
+ 152:	b5 cf       	rjmp	.-150    	; 0xbe <_Z8debouncev+0x6>
+    (void)__s;
+}
+
+static __inline__ void __iRestore(const  uint8_t *__s)
+{
+    SREG = *__s;
+ 154:	3f bf       	out	0x3f, r19	; 63
+    __asm__ volatile ("" ::: "memory");
+ 156:	08 95       	ret
+
+00000158 <_Z12INITIATE_PWMv>:
+}
+
+
+void INITIATE_PWM()
+{
+		DDRB   |= (1 << PB2);						// PWM output on PB2
+ 158:	ba 9a       	sbi	0x17, 2	; 23
+		TCCR0A = (1 << COM0A1) | (1 << WGM00) | (1<<WGM01) | (1<<WGM01);		// phase correct PWM mode
+ 15a:	83 e8       	ldi	r24, 0x83	; 131
+ 15c:	80 bf       	out	0x30, r24	; 48
+		OCR0A  = 0b00000000;						// initial PWM pulse width
+ 15e:	16 be       	out	0x36, r1	; 54
+		
+		TCCR0B = (1<<CS01);							// clock source = CLK/8, start PWM
+ 160:	82 e0       	ldi	r24, 0x02	; 2
+ 162:	83 bf       	out	0x33, r24	; 51
+		OCR0A  = 128;
+ 164:	80 e8       	ldi	r24, 0x80	; 128
+ 166:	86 bf       	out	0x36, r24	; 54
+ 168:	08 95       	ret
+
+0000016a <main>:
+}
+int main(void)
+{
+	INITIATE_INTERUPT();
+ 16a:	7a df       	rcall	.-268    	; 0x60 <_Z17INITIATE_INTERUPTv>
+	INITIATE_LEDS();
+ 16c:	83 df       	rcall	.-250    	; 0x74 <_Z13INITIATE_LEDSv>
+	INITIATE_BUTTON();
+ 16e:	7e df       	rcall	.-260    	; 0x6c <_Z15INITIATE_BUTTONv>
+	INITIATE_ADC();
+ 170:	69 df       	rcall	.-302    	; 0x44 <_Z12INITIATE_ADCv>
+	INITIATE_PWM();
+ 172:	f2 df       	rcall	.-28     	; 0x158 <_Z12INITIATE_PWMv>
+		}
+		
+		if (button_state & (1<<ButtonMask2)) //(button_state == 1)
+		
+		{
+			LEDPort = 1<<LEDMask;
+ 174:	c1 e0       	ldi	r28, 0x01	; 1
+	
+	
+	while(1)
+	{
+		
+		if (button_flag == 1)
+ 176:	80 91 65 00 	lds	r24, 0x0065
+ 17a:	90 91 66 00 	lds	r25, 0x0066
+ 17e:	01 97       	sbiw	r24, 0x01	; 1
+ 180:	09 f4       	brne	.+2      	; 0x184 <main+0x1a>
+		{
+			debounce();
+ 182:	9a df       	rcall	.-204    	; 0xb8 <_Z8debouncev>
+			
+		}
+		
+		
+		
+		if (button_state & (1<<ButtonMask1)) //(button_state == 1)
+ 184:	80 91 67 00 	lds	r24, 0x0067
+ 188:	80 ff       	sbrs	r24, 0
+ 18a:	03 c0       	rjmp	.+6      	; 0x192 <main+0x28>
+		
+		{
+			LEDPort = 0<<LEDMask;
+ 18c:	18 ba       	out	0x18, r1	; 24
+			//OCR0A  += 25;
+			button_state = 0;
+ 18e:	10 92 67 00 	sts	0x0067, r1
+		}
+		
+		if (button_state & (1<<ButtonMask2)) //(button_state == 1)
+ 192:	80 91 67 00 	lds	r24, 0x0067
+ 196:	81 ff       	sbrs	r24, 1
+ 198:	03 c0       	rjmp	.+6      	; 0x1a0 <main+0x36>
+		
+		{
+			LEDPort = 1<<LEDMask;
+ 19a:	c8 bb       	out	0x18, r28	; 24
+			//OCR0A  -= 25;
+			button_state = 0;
+ 19c:	10 92 67 00 	sts	0x0067, r1
+		}
+	
+		ADCRead();
+ 1a0:	58 df       	rcall	.-336    	; 0x52 <_Z7ADCReadv>
+		OCR0A  = adc_value;
+ 1a2:	80 91 60 00 	lds	r24, 0x0060
+ 1a6:	86 bf       	out	0x36, r24	; 54
+		OCR0A  = 0b00000000;						// initial PWM pulse width
+		
+		TCCR0B = (1<<CS01);							// clock source = CLK/8, start PWM
+		OCR0A  = 128;
+}
+int main(void)
+ 1a8:	e6 cf       	rjmp	.-52     	; 0x176 <main+0xc>
+
+000001aa <_exit>:
+ 1aa:	f8 94       	cli
+
+000001ac <__stop_program>:
+ 1ac:	ff cf       	rjmp	.-2      	; 0x1ac <__stop_program>
